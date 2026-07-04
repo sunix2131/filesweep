@@ -1,82 +1,82 @@
 # FileSweep
 
-FileSweep is a local desktop app for sorting out messy folders safely. It scans selected folders, finds exact duplicates, shows large files, groups storage by category, and lets the user prepare a file action plan before anything is moved or sent to trash.
+FileSweep - локальное desktop-приложение для аккуратной уборки папок. Оно сканирует выбранные директории, находит точные дубликаты, показывает крупные файлы, раскладывает содержимое по категориям и помогает собрать план действий перед тем, как что-то переносить или отправлять в корзину.
 
-The app is intentionally local-first: no accounts, no cloud sync, no telemetry, no background cleanup, and no automatic deletion.
+Главная идея простая: приложение должно быстро показать, что происходит с файлами, но последнее решение всегда остается за пользователем. Никаких автоматических удалений, облака, аккаунтов, телеметрии и фоновой чистки.
 
-## Screenshots
+## Скриншоты
 
-### Home
+### Главная
 
-![FileSweep home screen](docs/screenshots/home.svg)
+![Главный экран FileSweep](docs/screenshots/home.svg)
 
-### Duplicates
+### Дубликаты
 
-![FileSweep duplicates screen](docs/screenshots/duplicates.svg)
+![Экран дубликатов FileSweep](docs/screenshots/duplicates.svg)
 
-### Categories
+### Категории
 
-![FileSweep categories screen](docs/screenshots/categories.svg)
+![Экран категорий FileSweep](docs/screenshots/categories.svg)
 
-## Why
+## Зачем
 
-File managers are good at showing folders, but they do not answer the questions I usually have when a directory gets messy:
+Обычный файловый менеджер хорошо показывает папки, но плохо отвечает на вопросы, которые появляются при разборе больших директорий:
 
-- which files are actually identical;
-- what is taking the most space;
-- what types of files dominate the folder;
-- what can be moved safely;
-- what will happen before I confirm an action.
+- какие файлы действительно одинаковые;
+- что занимает больше всего места;
+- какие типы файлов преобладают;
+- что можно безопасно перенести;
+- что именно произойдет перед подтверждением действия.
 
-FileSweep is built around one rule: the app should show the situation clearly, but the user stays in control.
+FileSweep закрывает этот сценарий как отдельный инструмент: сначала обзор и проверка, потом план действий, и только после этого операции с файлами.
 
-## Current Features
+## Что уже есть
 
-- [x] Native desktop shell with Wails v2.
-- [x] React + TypeScript frontend.
-- [x] macOS Finder-inspired layout.
-- [x] Native folder picker.
-- [x] Recursive folder scanning.
-- [x] Scan progress with current file path and scan phase.
-- [x] Scan cancellation.
-- [x] Local SQLite database.
-- [x] Embedded SQL migrations.
-- [x] Exact duplicate detection by file size and SHA-256.
-- [x] Worker pool for hashing duplicate candidates.
-- [x] Detection of files that changed while being hashed.
-- [x] File categories by extension and MIME type.
-- [x] Large files view with size filter and search.
-- [x] Category summary view.
-- [x] Action plan before file operations.
-- [x] Safe move with size/hash checks.
-- [x] Cross-volume copy, verify, then remove source.
-- [x] Undo for move operations.
-- [x] System trash integration without permanent delete fallback.
-- [x] Action history.
-- [x] CSV export.
-- [x] Local settings.
-- [x] Russian and English UI dictionaries.
-- [x] Light, dark, and system theme modes.
-- [x] Go unit/integration tests.
-- [x] Frontend lint, typecheck, and Vitest.
-- [x] GitHub Actions for PR checks and release builds.
+- Нативная desktop-оболочка на Wails v2.
+- Frontend на React и TypeScript.
+- Интерфейс в стиле macOS Finder.
+- Нативный выбор папки.
+- Рекурсивное сканирование директорий.
+- Прогресс сканирования с текущим файлом и стадией процесса.
+- Отмена сканирования.
+- Локальная база SQLite.
+- Встроенные SQL-миграции.
+- Поиск точных дубликатов по размеру и SHA-256.
+- Worker pool для хеширования кандидатов в дубликаты.
+- Проверка файлов, которые изменились во время хеширования.
+- Категории файлов по расширению и MIME type.
+- Экран крупных файлов с поиском и фильтром размера.
+- Сводка по категориям.
+- План действий перед файловыми операциями.
+- Безопасное перемещение с проверкой размера и хеша.
+- Перенос между разными томами через copy, verify и удаление исходника.
+- Undo для операций перемещения.
+- Интеграция с системной корзиной без fallback на безвозвратное удаление.
+- История действий.
+- Экспорт в CSV.
+- Локальные настройки.
+- Русская и английская локализация интерфейса.
+- Светлая, темная и системная темы.
+- Go unit/integration tests.
+- Frontend lint, typecheck и Vitest.
+- GitHub Actions для PR checks и release builds.
 
-## Roadmap
+## Что планируется
 
-- [ ] Duplicate group details: open a group, compare all copies, choose which file to keep, and add selected copies to the action plan.
-- [ ] Image previews for duplicate images and large image files.
-- [ ] Better file category names and localized system errors.
-- [ ] Row virtualization for very large scan results.
-- [ ] Smarter filters for large files: folder, category, modified date, and custom size.
-- [ ] Safer Windows trash integration through Shell APIs.
-- [ ] Release artifacts for macOS, Windows, and Linux.
-- [ ] Playwright smoke test for the full scan-to-action-plan flow.
+- Детальная страница группы дубликатов: сравнение всех копий, выбор файла, который нужно оставить, и добавление выбранных копий в план действий.
+- Preview изображений для дубликатов и крупных image-файлов.
+- Более точные названия категорий и локализация системных ошибок.
+- Виртуализация строк для больших результатов сканирования.
+- Расширенные фильтры крупных файлов: папка, категория, дата изменения и произвольный размер.
+- Более надежная интеграция с корзиной Windows через Shell API.
+- Готовые release artifacts для macOS, Windows и Linux.
+- Playwright smoke test для полного сценария от сканирования до плана действий.
 
-## Stack
+## Стек
 
 - Go
 - Wails v2.12.0
-- SQLite with `database/sql`
+- SQLite через `database/sql`
 - `modernc.org/sqlite`
 - React
 - TypeScript
@@ -88,37 +88,43 @@ FileSweep is built around one rule: the app should show the situation clearly, b
 - Vitest
 - GitHub Actions
 
-## Supported Platforms
+## Платформы
 
-Target platforms:
+Целевые платформы:
 
 - macOS Intel / Apple Silicon
 - Windows 10/11
 - Linux x64
 
-The app is currently developed and tested primarily on macOS.
+Сейчас основная разработка и проверка идут на macOS.
 
-## Development
+## Разработка
 
-Install Wails:
+Установить Wails:
 
 ```sh
 go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
 ```
 
-Install frontend dependencies:
+Установить зависимости frontend:
 
 ```sh
 npm install --prefix frontend
 ```
 
-Run the app:
+Запустить приложение:
 
 ```sh
 wails dev
 ```
 
-## Checks
+Если после установки команда `wails` не находится, нужно добавить Go bin в `PATH`:
+
+```sh
+export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+## Проверки
 
 Backend:
 
@@ -143,7 +149,7 @@ npm run build --prefix frontend
 wails build
 ```
 
-## Project Structure
+## Структура проекта
 
 ```text
 internal/
@@ -159,12 +165,12 @@ frontend/
   src/i18n/         translation dictionaries
 ```
 
-## Privacy
+## Приватность
 
-FileSweep does not upload file lists, hashes, paths, or scan results. The database, settings, logs, thumbnails, and exports are stored locally in the user's application data directories.
+FileSweep не загружает списки файлов, хеши, пути или результаты сканирования на внешние серверы. База данных, настройки, логи, thumbnails и экспорты хранятся локально в директориях данных приложения.
 
-The app does not perform irreversible deletion. Trash operations use the operating system trash and fail if system trash is unavailable.
+Приложение не выполняет безвозвратное удаление. Операции удаления идут через системную корзину и завершаются ошибкой, если корзина недоступна.
 
-## License
+## Лицензия
 
 MIT
