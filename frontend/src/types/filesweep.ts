@@ -1,0 +1,7 @@
+export type ScanSession = { id: string; status: string; startedAt: string; completedAt?: string; selectedPaths: string[]; filesCount: number; totalSizeBytes: number; duplicateGroupsCount: number; reclaimableBytes: number; errorsCount: number };
+export type ScanProgress = { scanId: string; phase: string; processedFiles: number; totalFiles: number; currentPath: string; percent: number; status?: 'running' | 'completed' | 'cancelled' | 'failed'; message?: string };
+export type ScanFile = { id: string; absolutePath: string; relativePath: string; name: string; category: string; sizeBytes: number; modifiedAt: string; sha256?: string };
+export type DuplicateGroup = { id: string; filesCount: number; fileSizeBytes: number; estimatedReclaimableBytes: number; recommendedFileId: string; category: string; members?: ScanFile[] };
+export type Settings = { language: 'ru' | 'en'; theme: 'system' | 'light' | 'dark'; includeHiddenFiles: boolean; followSymlinks: boolean; maxHashWorkers: number; maxPreviewFileSizeMb: number; scanExcludedFolderNames: string[]; recentFolders: string[] };
+export type ActionItem = { id?: string; sourcePath: string; targetPath?: string; sourceSizeBytes: number; sourceSha256?: string; status?: string; errorMessage?: string };
+export type FileAction = { id: string; actionType: string; status: string; createdAt?: string; undoAvailable: boolean; summary: string; items?: ActionItem[]; errorMessage?: string };

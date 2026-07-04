@@ -1,0 +1,8 @@
+{
+  "app": "FileSweep", "home": "Home", "duplicates": "Duplicates", "large": "Large files", "categories": "Categories", "plan": "Action plan", "history": "History", "settings": "Settings",
+  "scanFolder": "Scan folder", "addFolder": "Add folder", "startScan": "Start scan", "cancel": "Cancel", "files": "Files", "size": "Size", "duplicateGroups": "Duplicate groups", "reclaimable": "Potentially reclaimable", "errors": "Access errors", "latestScan": "Latest scan",
+  "name": "Name", "category": "Category", "folder": "Folder", "modified": "Modified", "actions": "Actions", "open": "Open", "reveal": "Reveal", "addToPlan": "Plan", "move": "Move", "trash": "Trash", "execute": "Execute actions", "clear": "Clear", "export": "Export CSV",
+  "copies": "Copies", "recommended": "Recommended to keep", "search": "Search", "minSize": "Minimum size", "theme": "Theme", "language": "Language", "hidden": "Hidden files", "symlinks": "Symlinks", "workers": "Hash workers", "previewSize": "Preview size", "save": "Save", "undo": "Undo move", "empty": "No data yet", "version": "Version 0.1.0",
+  "scanInProgress": "Scan in progress", "currentFile": "Checking now", "foundFiles": "Files found", "preparing": "Preparing", "scanCompleted": "Scan completed", "scanCancelled": "Scan cancelled", "scanFailed": "Scan failed",
+  "phaseQueued": "Preparing", "phaseDiscovering": "Finding files", "phaseAnalyzing": "Analyzing", "phaseHashing": "Checking duplicates", "phaseSaving": "Saving results", "phaseCompleted": "Completed", "phaseCancelled": "Cancelled", "phaseFailed": "Failed"
+}

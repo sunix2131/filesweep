@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img" aria-label="FileSweep duplicates screen">
+  <rect width="1280" height="800" rx="18" fill="#f5f5f7"/>
+  <rect width="1280" height="34" fill="#ededee"/><circle cx="22" cy="17" r="6" fill="#ff5f57"/><circle cx="44" cy="17" r="6" fill="#ffbd2e"/><circle cx="66" cy="17" r="6" fill="#28c840"/>
+  <text x="640" y="22" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="700" fill="#333">FileSweep</text>
+  <rect x="0" y="34" width="230" height="766" fill="#f7f7f8"/><line x1="230" y1="34" x2="230" y2="800" stroke="#d9dce1"/>
+  <text x="38" y="86" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1f2933">FileSweep</text>
+  <text x="54" y="154" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">Главная</text>
+  <rect x="18" y="177" width="194" height="34" rx="7" fill="#dbe8f6"/><text x="54" y="199" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="600" fill="#1f2933">Дубликаты</text>
+  <text x="54" y="244" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">Большие файлы</text>
+  <text x="270" y="92" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="30" font-weight="650" fill="#1f2933">Дубликаты</text>
+  <rect x="270" y="126" width="850" height="506" rx="8" fill="#fff" stroke="#d9dce1"/>
+  <rect x="270" y="126" width="850" height="40" rx="8" fill="#ececee"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="700" fill="#687589">
+    <text x="292" y="152">Копии</text><text x="410" y="152">Размер</text><text x="555" y="152">Потенциально можно освободить</text><text x="980" y="152">Категория</text>
+  </g>
+  <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">
+    <line x1="270" y1="206" x2="1120" y2="206" stroke="#eceef1"/><text x="292" y="192">2</text><text x="410" y="192">1010.8 KB</text><text x="555" y="192">1010.8 KB</text><text x="980" y="192">other</text>
+    <line x1="270" y1="246" x2="1120" y2="246" stroke="#eceef1"/><text x="292" y="232">3</text><text x="410" y="232">189.3 KB</text><text x="555" y="232">378.5 KB</text><text x="980" y="232">fonts</text>
+    <line x1="270" y1="286" x2="1120" y2="286" stroke="#eceef1"/><text x="292" y="272">2</text><text x="410" y="272">129.9 KB</text><text x="555" y="272">129.9 KB</text><text x="980" y="272">code</text>
+    <line x1="270" y1="326" x2="1120" y2="326" stroke="#eceef1"/><text x="292" y="312">2</text><text x="410" y="312">109.3 KB</text><text x="555" y="312">109.3 KB</text><text x="980" y="312">other</text>
+    <line x1="270" y1="366" x2="1120" y2="366" stroke="#eceef1"/><text x="292" y="352">2</text><text x="410" y="352">79.2 KB</text><text x="555" y="352">79.2 KB</text><text x="980" y="352">other</text>
+  </g>
+</svg>

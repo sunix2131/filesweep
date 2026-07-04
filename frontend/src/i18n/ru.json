@@ -1,0 +1,8 @@
+{
+  "app": "FileSweep", "home": "Главная", "duplicates": "Дубликаты", "large": "Большие файлы", "categories": "Категории", "plan": "План действий", "history": "История", "settings": "Настройки",
+  "scanFolder": "Сканировать папку", "addFolder": "Добавить папку", "startScan": "Начать сканирование", "cancel": "Отменить", "files": "Файлы", "size": "Размер", "duplicateGroups": "Группы дубликатов", "reclaimable": "Потенциально можно освободить", "errors": "Ошибки доступа", "latestScan": "Последнее сканирование",
+  "name": "Имя", "category": "Категория", "folder": "Папка", "modified": "Дата изменения", "actions": "Действия", "open": "Открыть", "reveal": "Показать", "addToPlan": "В план", "move": "Переместить", "trash": "В корзину", "execute": "Выполнить действия", "clear": "Очистить", "export": "Экспорт CSV",
+  "copies": "Копии", "recommended": "Рекомендуется оставить", "search": "Поиск", "minSize": "Минимальный размер", "theme": "Тема", "language": "Язык", "hidden": "Скрытые файлы", "symlinks": "Символические ссылки", "workers": "Hash workers", "previewSize": "Размер preview", "save": "Сохранить", "undo": "Отменить перемещение", "empty": "Пока нет данных", "version": "Версия 0.1.0",
+  "scanInProgress": "Сканирование идёт", "currentFile": "Сейчас проверяется", "foundFiles": "Найдено файлов", "preparing": "Подготовка", "scanCompleted": "Сканирование завершено", "scanCancelled": "Сканирование отменено", "scanFailed": "Сканирование завершилось с ошибкой",
+  "phaseQueued": "Подготовка", "phaseDiscovering": "Поиск файлов", "phaseAnalyzing": "Анализ", "phaseHashing": "Проверка дубликатов", "phaseSaving": "Сохранение результатов", "phaseCompleted": "Завершено", "phaseCancelled": "Отменено", "phaseFailed": "Ошибка"
+}

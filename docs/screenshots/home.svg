@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img" aria-label="FileSweep home screen">
+  <rect width="1280" height="800" rx="18" fill="#f5f5f7"/>
+  <rect width="1280" height="34" fill="#ededee"/>
+  <circle cx="22" cy="17" r="6" fill="#ff5f57"/><circle cx="44" cy="17" r="6" fill="#ffbd2e"/><circle cx="66" cy="17" r="6" fill="#28c840"/>
+  <text x="640" y="22" text-anchor="middle" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" font-weight="700" fill="#333">FileSweep</text>
+  <rect x="0" y="34" width="230" height="766" fill="#f7f7f8"/>
+  <line x1="230" y1="34" x2="230" y2="800" stroke="#d9dce1"/>
+  <text x="38" y="86" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#1f2933">FileSweep</text>
+  <rect x="18" y="132" width="194" height="34" rx="7" fill="#dbe8f6"/>
+  <text x="54" y="154" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="600" fill="#1f2933">Главная</text>
+  <text x="54" y="199" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">Дубликаты</text>
+  <text x="54" y="244" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">Большие файлы</text>
+  <text x="54" y="289" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">Категории</text>
+  <text x="54" y="334" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">План действий</text>
+  <text x="54" y="379" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">История</text>
+  <text x="54" y="424" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">Настройки</text>
+  <text x="270" y="92" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="30" font-weight="650" fill="#1f2933">Главная</text>
+  <rect x="270" y="124" width="132" height="32" rx="7" fill="#fff" stroke="#cfd4dc"/><text x="286" y="145" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" fill="#1f2933">Добавить папку</text>
+  <rect x="414" y="124" width="164" height="32" rx="7" fill="#fff" stroke="#cfd4dc"/><text x="430" y="145" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="14" fill="#1f2933">Начать сканирование</text>
+  <rect x="270" y="176" width="840" height="40" rx="7" fill="#fff" stroke="#d9dce1"/><text x="288" y="202" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" fill="#1f2933">/Applications</text>
+  <rect x="270" y="236" width="840" height="104" rx="8" fill="#fff" stroke="#d9dce1"/>
+  <text x="290" y="263" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="15" font-weight="700" fill="#1f2933">Сканирование идёт</text>
+  <text x="1010" y="263" text-anchor="end" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="13" fill="#6b7686">Проверка дубликатов</text>
+  <rect x="290" y="280" width="800" height="7" rx="4" fill="#eceef1"/><rect x="290" y="280" width="536" height="7" rx="4" fill="#0a84ff"/>
+  <text x="290" y="314" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12" fill="#6b7686">Сейчас проверяется</text>
+  <text x="420" y="314" font-family="SFMono-Regular,Menlo,monospace" font-size="12" fill="#1f2933">/Applications/Visual Studio Code.app/Contents/Frameworks/Electron Framework</text>
+  <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">
+    <rect x="270" y="366" width="154" height="96" rx="8" fill="#fff" stroke="#d9dce1"/><text x="288" y="392" font-size="13" fill="#6b7686">Файлы</text><text x="288" y="430" font-size="25" font-weight="700" fill="#1f2933">2362</text>
+    <rect x="440" y="366" width="154" height="96" rx="8" fill="#fff" stroke="#d9dce1"/><text x="458" y="392" font-size="13" fill="#6b7686">Размер</text><text x="458" y="430" font-size="25" font-weight="700" fill="#1f2933">2.4 GB</text>
+    <rect x="610" y="366" width="186" height="96" rx="8" fill="#fff" stroke="#d9dce1"/><text x="628" y="392" font-size="13" fill="#6b7686">Группы дубликатов</text><text x="628" y="430" font-size="25" font-weight="700" fill="#1f2933">84</text>
+    <rect x="812" y="366" width="210" height="96" rx="8" fill="#fff" stroke="#d9dce1"/><text x="830" y="392" font-size="13" fill="#6b7686">Можно освободить</text><text x="830" y="430" font-size="25" font-weight="700" fill="#1f2933">3.1 MB</text>
+  </g>
+</svg>

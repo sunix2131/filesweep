@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Go
+.gocache/
+bin/
+*.test
+
+# Wails/build output
+filesweep
+build/bin/
+build/darwin/
+build/windows/
+build/linux/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Local runtime data
+.tmp-home/
+*.log
+
+# IDE
+.idea/
+.vscode/
