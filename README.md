@@ -109,7 +109,7 @@ go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
 Установить зависимости frontend:
 
 ```sh
-npm install --prefix frontend
+npm ci --prefix frontend
 ```
 
 Запустить приложение:
@@ -126,20 +126,22 @@ export PATH="$PATH:$(go env GOPATH)/bin"
 
 ## Проверки
 
-Backend:
+Сначала собрать frontend — его output встраивается в Go binary через `go:embed`:
 
 ```sh
-gofmt -w .
-go vet ./...
-go test ./internal/... ./tests .
-```
-
-Frontend:
-
-```sh
+npm ci --prefix frontend
 npm run lint --prefix frontend
 npm run typecheck --prefix frontend
 npm run test --prefix frontend
+npm run build --prefix frontend
+```
+
+Затем проверить backend:
+
+```sh
+gofmt -w $(find . -path ./frontend/node_modules -prune -o -name '*.go' -print)
+go vet ./internal/... ./tests .
+go test ./internal/... ./tests .
 ```
 
 Build:
