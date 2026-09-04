@@ -37,3 +37,36 @@ func TestAutoRenamePath(t *testing.T) {
 	require.NoError(t, os.WriteFile(path, []byte("x"), 0o644))
 	require.Equal(t, filepath.Join(dir, "file (1).pdf"), filesystem.AutoRenamePath(path))
 }
+
+func TestSafeMoveChecksHashBeforeMoving(t *testing.T) {
+	dir := t.TempDir()
+	source := filepath.Join(dir, "source.txt")
+	target := filepath.Join(dir, "target.txt")
+	require.NoError(t, os.WriteFile(source, []byte("changed"), 0o640))
+
+	err := filesystem.SafeMove(source, target, int64(len("changed")), "wrong-hash")
+
+	require.ErrorContains(t, err, "changed after scan")
+	require.FileExists(t, source)
+	require.NoFileExists(t, target)
+}
+
+func TestSafeMoveDoesNotOverwriteExistingTarget(t *testing.T) {
+	dir := t.TempDir()
+	source := filepath.Join(dir, "source.txt")
+	target := filepath.Join(dir, "target.txt")
+	require.NoError(t, os.WriteFile(source, []byte("source"), 0o640))
+	require.NoError(t, os.WriteFile(target, []byte("target"), 0o644))
+	hash, err := filesystem.HashFile(source)
+	require.NoError(t, err)
+
+	require.NoError(t, filesystem.SafeMove(source, target, int64(len("source")), hash.SHA256))
+
+	original, err := os.ReadFile(target)
+	require.NoError(t, err)
+	renamed, err := os.ReadFile(filepath.Join(dir, "target (1).txt"))
+	require.NoError(t, err)
+	require.Equal(t, []byte("target"), original)
+	require.Equal(t, []byte("source"), renamed)
+	require.NoFileExists(t, source)
+}

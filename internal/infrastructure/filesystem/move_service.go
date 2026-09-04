@@ -25,50 +25,79 @@ func AutoRenamePath(target string) string {
 }
 
 func SafeMove(source, target string, expectedSize int64, expectedSHA string) error {
-	info, err := os.Stat(source)
+	source = filepath.Clean(source)
+	target = filepath.Clean(target)
+	if source == target {
+		return errors.New("source and target paths are the same")
+	}
+
+	info, err := os.Lstat(source)
 	if err != nil {
 		return err
 	}
+	if !info.Mode().IsRegular() {
+		return errors.New("source is not a regular file")
+	}
 	if expectedSize >= 0 && info.Size() != expectedSize {
 		return errors.New("file changed after scan")
+	}
+	if expectedSHA != "" {
+		hash, err := HashFile(source)
+		if err != nil {
+			return err
+		}
+		if hash.Unstable || hash.SHA256 != expectedSHA {
+			return errors.New("file changed after scan")
+		}
 	}
 	target = AutoRenamePath(target)
 	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 		return err
 	}
-	if err := os.Rename(source, target); err == nil {
+
+	// A hard link is an atomic no-overwrite move on the same filesystem.
+	// If it is not supported, the copy path below handles another volume.
+	if err := os.Link(source, target); err == nil {
+		if err := os.Remove(source); err != nil {
+			_ = os.Remove(target)
+			return fmt.Errorf("remove source after linking: %w", err)
+		}
 		return nil
 	}
-	tmp := target + ".filesweep-copying"
-	if err := copyFile(source, tmp); err != nil {
-		_ = os.Remove(tmp)
+
+	tmp, err := copyToTemporary(source, filepath.Dir(target), info.Mode().Perm())
+	if err != nil {
 		return err
 	}
+	defer os.Remove(tmp)
+
 	copied, err := os.Stat(tmp)
 	if err != nil {
-		_ = os.Remove(tmp)
 		return err
 	}
 	if copied.Size() != info.Size() {
-		_ = os.Remove(tmp)
 		return errors.New("copied file size mismatch")
 	}
 	if expectedSHA != "" {
 		res, err := HashFile(tmp)
 		if err != nil {
-			_ = os.Remove(tmp)
 			return err
 		}
-		if res.SHA256 != expectedSHA {
-			_ = os.Remove(tmp)
+		if res.Unstable || res.SHA256 != expectedSHA {
 			return errors.New("copied file hash mismatch")
 		}
 	}
-	if err := os.Rename(tmp, target); err != nil {
-		_ = os.Remove(tmp)
-		return err
+	if err := os.Chtimes(tmp, info.ModTime(), info.ModTime()); err != nil {
+		return fmt.Errorf("preserve modification time: %w", err)
 	}
-	return os.Remove(source)
+	if err := os.Link(tmp, target); err != nil {
+		return fmt.Errorf("create destination: %w", err)
+	}
+	if err := os.Remove(source); err != nil {
+		_ = os.Remove(target)
+		return fmt.Errorf("remove source after copying: %w", err)
+	}
+	return nil
 }
 
 func UndoMove(source, target string, expectedSize int64, expectedSHA string) error {
@@ -94,19 +123,36 @@ func UndoMove(source, target string, expectedSize int64, expectedSHA string) err
 	return SafeMove(target, source, expectedSize, expectedSHA)
 }
 
-func copyFile(source, target string) error {
+func copyToTemporary(source, targetDir string, mode os.FileMode) (string, error) {
 	in, err := os.Open(source)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer in.Close()
-	out, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0o644)
+	out, err := os.CreateTemp(targetDir, ".filesweep-copying-*")
 	if err != nil {
-		return err
+		return "", err
 	}
-	defer out.Close()
+	path := out.Name()
+	remove := true
+	defer func() {
+		_ = out.Close()
+		if remove {
+			_ = os.Remove(path)
+		}
+	}()
+	if err := out.Chmod(mode); err != nil {
+		return "", err
+	}
 	if _, err := io.CopyBuffer(out, in, make([]byte, 2*1024*1024)); err != nil {
-		return err
+		return "", err
 	}
-	return out.Sync()
+	if err := out.Sync(); err != nil {
+		return "", err
+	}
+	if err := out.Close(); err != nil {
+		return "", err
+	}
+	remove = false
+	return path, nil
 }
