@@ -1,178 +1,81 @@
 # FileSweep
 
-FileSweep - локальное desktop-приложение для аккуратной уборки папок. Оно сканирует выбранные директории, находит точные дубликаты, показывает крупные файлы, раскладывает содержимое по категориям и помогает собрать план действий перед тем, как что-то переносить или отправлять в корзину.
+FileSweep scans local folders and shows exact duplicates, large files and storage use by category. File operations are collected into a plan and require confirmation; scanning never changes the selected folders.
 
-Главная идея простая: приложение должно быстро показать, что происходит с файлами, но последнее решение всегда остается за пользователем. Никаких автоматических удалений, облака, аккаунтов, телеметрии и фоновой чистки.
+The application is built with Go and Wails. Scan results, settings and action history are stored in a local SQLite database.
 
-## Скриншоты
+## Current behavior
 
-### Главная
+- recursive scanning with exclusions, progress and cancellation;
+- exact duplicate detection using file size followed by SHA-256;
+- large-file and category views;
+- a reviewable action plan for move and trash operations;
+- undo for completed moves;
+- CSV export of scan results;
+- Russian and English interface;
+- light, dark and system themes.
 
-![Главный экран FileSweep](docs/screenshots/home.svg)
+Duplicate candidates are grouped by size before hashing. A file whose size or modification time changes during hashing is marked unstable and excluded from duplicate groups.
 
-### Дубликаты
+## File operation checks
 
-![Экран дубликатов FileSweep](docs/screenshots/duplicates.svg)
+FileSweep does not contain a permanent-delete fallback. A trash operation fails if the operating system trash service is unavailable.
 
-### Категории
+Before a move, the application compares the current file with the recorded size and, when available, SHA-256. Existing destination files are not overwritten. FileSweep first attempts a no-overwrite hard link followed by removal of the source. When linking the source is unavailable, the file is copied to a unique temporary file, verified and linked into the destination before the source is removed.
 
-![Экран категорий FileSweep](docs/screenshots/categories.svg)
+If removing the source fails, the new destination entry is rolled back. The original file remains in place.
 
-## Зачем
+## Development
 
-Обычный файловый менеджер хорошо показывает папки, но плохо отвечает на вопросы, которые появляются при разборе больших директорий:
+Requirements:
 
-- какие файлы действительно одинаковые;
-- что занимает больше всего места;
-- какие типы файлов преобладают;
-- что можно безопасно перенести;
-- что именно произойдет перед подтверждением действия.
+- Go 1.22 or newer;
+- Node.js 22 or newer;
+- Wails CLI 2.12;
+- platform packages required by Wails.
 
-FileSweep закрывает этот сценарий как отдельный инструмент: сначала обзор и проверка, потом план действий, и только после этого операции с файлами.
-
-## Что уже есть
-
-- Нативная desktop-оболочка на Wails v2.
-- Frontend на React и TypeScript.
-- Интерфейс в стиле macOS Finder.
-- Нативный выбор папки.
-- Рекурсивное сканирование директорий.
-- Прогресс сканирования с текущим файлом и стадией процесса.
-- Отмена сканирования.
-- Локальная база SQLite.
-- Встроенные SQL-миграции.
-- Поиск точных дубликатов по размеру и SHA-256.
-- Worker pool для хеширования кандидатов в дубликаты.
-- Проверка файлов, которые изменились во время хеширования.
-- Категории файлов по расширению и MIME type.
-- Экран крупных файлов с поиском и фильтром размера.
-- Сводка по категориям.
-- План действий перед файловыми операциями.
-- Безопасное перемещение с проверкой размера и хеша.
-- Перенос между разными томами через copy, verify и удаление исходника.
-- Undo для операций перемещения.
-- Интеграция с системной корзиной без fallback на безвозвратное удаление.
-- История действий.
-- Экспорт в CSV.
-- Локальные настройки.
-- Русская и английская локализация интерфейса.
-- Светлая, темная и системная темы.
-- Go unit/integration tests.
-- Frontend lint, typecheck и Vitest.
-- GitHub Actions для PR checks и release builds.
-
-## Что планируется
-
-- Детальная страница группы дубликатов: сравнение всех копий, выбор файла, который нужно оставить, и добавление выбранных копий в план действий.
-- Preview изображений для дубликатов и крупных image-файлов.
-- Более точные названия категорий и локализация системных ошибок.
-- Виртуализация строк для больших результатов сканирования.
-- Расширенные фильтры крупных файлов: папка, категория, дата изменения и произвольный размер.
-- Более надежная интеграция с корзиной Windows через Shell API.
-- Готовые release artifacts для macOS, Windows и Linux.
-- Playwright smoke test для полного сценария от сканирования до плана действий.
-
-## Стек
-
-- Go
-- Wails v2.12.0
-- SQLite через `database/sql`
-- `modernc.org/sqlite`
-- React
-- TypeScript
-- Vite
-- Zustand
-- React Router
-- Lucide Icons
-- Tailwind CSS
-- Vitest
-- GitHub Actions
-
-## Платформы
-
-Целевые платформы:
-
-- macOS Intel / Apple Silicon
-- Windows 10/11
-- Linux x64
-
-Сейчас основная разработка и проверка идут на macOS.
-
-## Разработка
-
-Установить Wails:
-
-```sh
+```bash
 go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
-```
-
-Установить зависимости frontend:
-
-```sh
 npm ci --prefix frontend
-```
-
-Запустить приложение:
-
-```sh
 wails dev
 ```
 
-Если после установки команда `wails` не находится, нужно добавить Go bin в `PATH`:
+## Checks
 
-```sh
-export PATH="$PATH:$(go env GOPATH)/bin"
-```
+The frontend must be built first because `main.go` embeds `frontend/dist`.
 
-## Проверки
-
-Сначала собрать frontend — его output встраивается в Go binary через `go:embed`:
-
-```sh
+```bash
 npm ci --prefix frontend
 npm run lint --prefix frontend
 npm run typecheck --prefix frontend
-npm run test --prefix frontend
+npm test --prefix frontend
 npm run build --prefix frontend
-```
 
-Затем проверить backend:
-
-```sh
-gofmt -w $(find . -path ./frontend/node_modules -prune -o -name '*.go' -print)
+test -z "$(gofmt -l . | grep -v '^frontend/')"
 go vet ./internal/... ./tests .
-go test ./internal/... ./tests .
+go test -race ./internal/... ./tests .
 ```
 
-Build:
+GitHub Actions also runs `staticcheck`, `govulncheck` and a Wails build on Linux. Tagged releases are built separately on macOS, Windows and Linux runners.
 
-```sh
-npm run build --prefix frontend
-wails build
-```
-
-## Структура проекта
+## Layout
 
 ```text
 internal/
-  application/      scan, actions, undo, export, settings
-  domain/           scan, duplicates, actions, settings models
-  infrastructure/   SQLite, filesystem, platform adapters
-  transport/wails/  Wails API exposed to the frontend
+  application/      scan and action workflows
+  domain/           scan, duplicate, action and settings types
+  infrastructure/   SQLite, filesystem and platform adapters
+  transport/wails/  API exposed to the frontend
 
-frontend/
-  src/app/          application shell
-  src/pages/        screens
-  src/components/   shared UI
-  src/i18n/         translation dictionaries
+frontend/src/
+  app/              application shell
+  pages/            scan result screens
+  components/       shared interface components
+  i18n/             Russian and English strings
 ```
 
-## Приватность
+## Local data
 
-FileSweep не загружает списки файлов, хеши, пути или результаты сканирования на внешние серверы. База данных, настройки, логи, thumbnails и экспорты хранятся локально в директориях данных приложения.
+File paths, hashes and scan results are not sent to an application server. Thumbnails, exports, settings and logs remain in the operating system's application-data directory.
 
-Приложение не выполняет безвозвратное удаление. Операции удаления идут через системную корзину и завершаются ошибкой, если корзина недоступна.
-
-## Лицензия
-
-MIT
+The code is licensed under the MIT License. See [LICENSE](LICENSE).
