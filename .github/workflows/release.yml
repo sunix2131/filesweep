@@ -4,8 +4,12 @@ on:
   push:
     tags: ['v*']
 
+permissions:
+  contents: read
+
 jobs:
   build:
+    timeout-minutes: 30
     strategy:
       matrix:
         include:
@@ -17,22 +21,22 @@ jobs:
             platform: linux/amd64
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          go-version: '1.26.6'
-      - uses: actions/setup-node@v4
+          go-version: '1.26.8'
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
-      - run: npm install --prefix frontend
+      - run: npm ci --prefix frontend
       - run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
       - if: runner.os != 'Linux'
         run: wails build -platform ${{ matrix.platform }}
       - if: runner.os == 'Linux'
         run: wails build -platform ${{ matrix.platform }} -tags webkit2_41
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: filesweep-${{ matrix.platform }}
           path: build/bin/**

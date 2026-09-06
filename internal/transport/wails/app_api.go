@@ -49,9 +49,25 @@ func (a *AppAPI) SelectFolders() (dto.FolderSelectionResult, error) {
 }
 
 func (a *AppAPI) StartScan(req dto.StartScanRequest) (scan.Session, error) {
+	if a.ctx == nil {
+		return scan.Session{}, errors.New("application is not ready")
+	}
 	for _, p := range req.Paths {
-		if filesystem.IsDangerousRoot(p) && !req.ConfirmDangerousFolders {
-			return scan.Session{}, fmt.Errorf("dangerous folder requires explicit confirmation: %s", p)
+		if filesystem.IsDangerousRoot(p) {
+			answer, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+				Type:          runtime.QuestionDialog,
+				Title:         "Scan a broad folder?",
+				Message:       fmt.Sprintf("%s may contain system or home-directory files. Scanning can take a long time. Continue?", p),
+				Buttons:       []string{"Yes", "No"},
+				DefaultButton: "No",
+				CancelButton:  "No",
+			})
+			if err != nil {
+				return scan.Session{}, err
+			}
+			if answer != "Yes" {
+				return scan.Session{}, errors.New("scan cancelled")
+			}
 		}
 	}
 	return a.container.Services.StartScan(context.Background(), req.Paths)
@@ -92,6 +108,29 @@ func (a *AppAPI) BuildActionPlan(req dto.BuildActionPlanRequest) (actions.Action
 	return actions.Action{ID: "pending", ActionType: req.ActionType, Status: actions.StatusPlanned, Items: req.Items, Summary: fmt.Sprintf("%d files planned", len(req.Items))}, nil
 }
 func (a *AppAPI) ExecuteActionPlan(req dto.BuildActionPlanRequest) (actions.Action, error) {
+	if a.ctx == nil {
+		return actions.Action{}, errors.New("application is not ready")
+	}
+	if len(req.Items) == 0 {
+		return actions.Action{}, errors.New("action plan is empty")
+	}
+	if req.ActionType != actions.TypeMoveToFolder && req.ActionType != actions.TypeMoveToTrash {
+		return actions.Action{}, fmt.Errorf("unsupported action type: %s", req.ActionType)
+	}
+	answer, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+		Type:          runtime.QuestionDialog,
+		Title:         "Confirm file operation",
+		Message:       fmt.Sprintf("Execute %s for %d file(s)? Review the paths in the action plan before continuing.", req.ActionType, len(req.Items)),
+		Buttons:       []string{"Yes", "No"},
+		DefaultButton: "No",
+		CancelButton:  "No",
+	})
+	if err != nil {
+		return actions.Action{}, err
+	}
+	if answer != "Yes" {
+		return actions.Action{}, errors.New("action cancelled")
+	}
 	return a.container.Services.ExecuteAction(context.Background(), req.ActionType, req.Items)
 }
 func (a *AppAPI) UndoAction(actionID string) (actions.Action, error) {

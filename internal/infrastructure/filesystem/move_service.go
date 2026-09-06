@@ -31,24 +31,9 @@ func SafeMove(source, target string, expectedSize int64, expectedSHA string) err
 		return errors.New("source and target paths are the same")
 	}
 
-	info, err := os.Lstat(source)
+	info, err := VerifyScannedFile(source, expectedSize, expectedSHA)
 	if err != nil {
 		return err
-	}
-	if !info.Mode().IsRegular() {
-		return errors.New("source is not a regular file")
-	}
-	if expectedSize >= 0 && info.Size() != expectedSize {
-		return errors.New("file changed after scan")
-	}
-	if expectedSHA != "" {
-		hash, err := HashFile(source)
-		if err != nil {
-			return err
-		}
-		if hash.Unstable || hash.SHA256 != expectedSHA {
-			return errors.New("file changed after scan")
-		}
 	}
 	target = AutoRenamePath(target)
 	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
@@ -98,6 +83,31 @@ func SafeMove(source, target string, expectedSize int64, expectedSHA string) err
 		return fmt.Errorf("remove source after copying: %w", err)
 	}
 	return nil
+}
+
+// VerifyScannedFile prevents an action from operating on a path whose file was
+// replaced or modified after the scan result was created.
+func VerifyScannedFile(path string, expectedSize int64, expectedSHA string) (os.FileInfo, error) {
+	info, err := os.Lstat(filepath.Clean(path))
+	if err != nil {
+		return nil, err
+	}
+	if !info.Mode().IsRegular() {
+		return nil, errors.New("source is not a regular file")
+	}
+	if expectedSize >= 0 && info.Size() != expectedSize {
+		return nil, errors.New("file changed after scan")
+	}
+	if expectedSHA != "" {
+		hash, err := HashFile(path)
+		if err != nil {
+			return nil, err
+		}
+		if hash.Unstable || hash.SHA256 != expectedSHA {
+			return nil, errors.New("file changed after scan")
+		}
+	}
+	return info, nil
 }
 
 func UndoMove(source, target string, expectedSize int64, expectedSHA string) error {

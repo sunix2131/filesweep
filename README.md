@@ -1,6 +1,6 @@
 # FileSweep
 
-FileSweep scans local folders and shows exact duplicates, large files and storage use by category. File operations are collected into a plan and require confirmation; scanning never changes the selected folders.
+FileSweep scans local folders and shows exact duplicates, large files and storage use by category. File operations are collected into a plan and require confirmation in a native dialog; scanning never changes the selected folders. Scanning a filesystem root or home directory requires a separate warning confirmation.
 
 The application is built with Go and Wails. Scan results, settings and action history are stored in a local SQLite database.
 
@@ -29,7 +29,7 @@ If removing the source fails, the new destination entry is rolled back. The orig
 
 Requirements:
 
-- Go 1.22 or newer;
+- Go 1.26.8 or newer;
 - Node.js 22 or newer;
 - Wails CLI 2.12;
 - platform packages required by Wails.

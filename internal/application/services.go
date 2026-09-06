@@ -41,6 +41,10 @@ func NewServices(store *repositories.Store, paths apppaths.Paths, logger *slog.L
 }
 
 func (s *Services) StartScan(ctx context.Context, paths []string) (scan.Session, error) {
+	paths, err := validateScanPaths(paths)
+	if err != nil {
+		return scan.Session{}, err
+	}
 	cfg, err := s.Store.GetSettings(ctx)
 	if err != nil {
 		return scan.Session{}, err
@@ -174,6 +178,9 @@ func (s *Services) SaveSettings(ctx context.Context, cfg settings.Settings) (set
 }
 
 func (s *Services) ExecuteAction(ctx context.Context, actionType actions.Type, items []actions.Item) (actions.Action, error) {
+	if err := validateAction(actionType, items); err != nil {
+		return actions.Action{}, err
+	}
 	a := actions.Action{ID: uuid.NewString(), ActionType: actionType, Status: actions.StatusRunning, CreatedAt: time.Now(), StartedAt: time.Now(), Items: items}
 	for i := range a.Items {
 		if a.Items[i].ID == "" {
@@ -190,7 +197,10 @@ func (s *Services) ExecuteAction(ctx context.Context, actionType actions.Type, i
 				a.Items[i].Status = actions.StatusCompleted
 			}
 		case actions.TypeMoveToTrash:
-			err := s.Platform.MoveToTrash([]string{a.Items[i].SourcePath})
+			_, err := filesystem.VerifyScannedFile(a.Items[i].SourcePath, a.Items[i].SourceSizeBytes, a.Items[i].SourceSHA256)
+			if err == nil {
+				err = s.Platform.MoveToTrash([]string{a.Items[i].SourcePath})
+			}
 			if err != nil {
 				a.Items[i].Status = actions.StatusFailed
 				a.Items[i].ErrorMessage = err.Error()
@@ -227,6 +237,55 @@ func (s *Services) ExecuteAction(ctx context.Context, actionType actions.Type, i
 		}
 	}
 	return a, nil
+}
+
+func validateScanPaths(paths []string) ([]string, error) {
+	if len(paths) == 0 {
+		return nil, fmt.Errorf("select at least one folder")
+	}
+	cleaned := make([]string, 0, len(paths))
+	seen := make(map[string]struct{}, len(paths))
+	for _, path := range paths {
+		absolute, err := filepath.Abs(path)
+		if err != nil {
+			return nil, fmt.Errorf("resolve scan folder %q: %w", path, err)
+		}
+		absolute = filepath.Clean(absolute)
+		info, err := os.Stat(absolute)
+		if err != nil {
+			return nil, fmt.Errorf("open scan folder %q: %w", absolute, err)
+		}
+		if !info.IsDir() {
+			return nil, fmt.Errorf("scan path is not a folder: %s", absolute)
+		}
+		if _, exists := seen[absolute]; exists {
+			continue
+		}
+		seen[absolute] = struct{}{}
+		cleaned = append(cleaned, absolute)
+	}
+	return cleaned, nil
+}
+
+func validateAction(actionType actions.Type, items []actions.Item) error {
+	if actionType != actions.TypeMoveToFolder && actionType != actions.TypeMoveToTrash {
+		return fmt.Errorf("unsupported action type: %s", actionType)
+	}
+	if len(items) == 0 {
+		return fmt.Errorf("action plan is empty")
+	}
+	for index, item := range items {
+		if item.SourcePath == "" {
+			return fmt.Errorf("item %d has no source path", index+1)
+		}
+		if item.SourceSizeBytes < 0 {
+			return fmt.Errorf("item %d has an invalid source size", index+1)
+		}
+		if actionType == actions.TypeMoveToFolder && item.TargetPath == "" {
+			return fmt.Errorf("item %d has no target path", index+1)
+		}
+	}
+	return nil
 }
 
 func (s *Services) UndoAction(ctx context.Context, actionID string) (actions.Action, error) {

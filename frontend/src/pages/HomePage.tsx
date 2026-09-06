@@ -3,27 +3,49 @@ import { api } from '../lib/api';
 import { bytes, date } from '../lib/format';
 import { useAppStore } from '../stores/appStore';
 import { Stat } from '../components/Stat';
+import { Notice } from '../components/Notice';
+import { errorMessage } from '../lib/errors';
 import type { ScanSession } from '../types/filesweep';
 
 export function HomePage() {
   const { t, selectedPaths, addPath, activeScan, setActiveScan, scanProgress, setScanProgress } = useAppStore();
   const [scans, setScans] = useState<ScanSession[]>([]);
   const [busy, setBusy] = useState(false);
-  useEffect(() => { api.listScans().then(setScans).catch(() => undefined); }, [activeScan]);
-  const select = async () => { const res = await api.selectFolders(); res.paths.forEach(addPath); };
+  const [error, setError] = useState('');
+  useEffect(() => {
+    let active = true;
+    void api.listScans().then((items) => { if (active) setScans(items); }).catch((reason) => { if (active) setError(errorMessage(reason)); });
+    return () => { active = false; };
+  }, [activeScan]);
+  const select = async () => {
+    setError('');
+    try {
+      const res = await api.selectFolders();
+      res.paths.forEach(addPath);
+    } catch (reason) {
+      setError(errorMessage(reason));
+    }
+  };
   const scan = async () => {
     setBusy(true);
+    setError('');
     try {
-      const started = await api.startScan(selectedPaths, true);
+      const started = await api.startScan(selectedPaths);
       setActiveScan(started);
       setScanProgress({ scanId: started.id, phase: 'queued', processedFiles: 0, totalFiles: 0, currentPath: '', percent: 0, status: 'running' });
+    } catch (reason) {
+      setError(errorMessage(reason));
     } finally {
       setBusy(false);
     }
   };
   const cancel = async () => {
     if (scanProgress?.scanId) {
-      await api.cancelScan(scanProgress.scanId);
+      try {
+        await api.cancelScan(scanProgress.scanId);
+      } catch (reason) {
+        setError(errorMessage(reason));
+      }
     }
   };
   const latest = activeScan ?? scans[0];
@@ -31,6 +53,7 @@ export function HomePage() {
   const percent = Math.max(0, Math.min(100, scanProgress?.percent ?? 0));
   return <section>
     <header className="pageHeader"><h1>{t('home')}</h1><button onClick={select}>{t('scanFolder')}</button></header>
+    {error && <Notice>{error}</Notice>}
     <div className="toolbar"><button onClick={select}>{t('addFolder')}</button><button disabled={busy || selectedPaths.length === 0} onClick={scan}>{t('startScan')}</button></div>
     <div className="pathList">{selectedPaths.map((p) => <div key={p}>{p}</div>)}</div>
     {showProgress && <div className="scanProgress">

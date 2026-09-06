@@ -47,8 +47,12 @@ export function App() {
     };
   }, [setActiveScan, setScanProgress]);
   useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark');
+    const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+    const applyTheme = () => document.documentElement.classList.toggle('dark', theme === 'dark' || (theme === 'system' && media?.matches));
+    applyTheme();
     document.documentElement.lang = lang;
+    if (theme === 'system') media?.addEventListener('change', applyTheme);
+    return () => media?.removeEventListener('change', applyTheme);
   }, [theme, lang]);
   return (
     <ErrorBoundary>
