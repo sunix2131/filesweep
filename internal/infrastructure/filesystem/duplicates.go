@@ -1,6 +1,7 @@
 package filesystem
 
 import (
+	"context"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -105,6 +106,13 @@ func ApplyHashes(files []scan.File, workers int, hash func(string) (HashResult, 
 }
 
 func ApplyHashesWithProgress(files []scan.File, workers int, hash func(string) (HashResult, error), progress func(processed int, total int, currentPath string)) []scan.File {
+	return ApplyHashesContext(context.Background(), files, workers, hash, progress)
+}
+
+func ApplyHashesContext(ctx context.Context, files []scan.File, workers int, hash func(string) (HashResult, error), progress func(processed int, total int, currentPath string)) []scan.File {
+	if workers < 1 {
+		workers = 1
+	}
 	jobs := make(chan int)
 	var wg sync.WaitGroup
 	var processed atomic.Int64
@@ -113,6 +121,9 @@ func ApplyHashesWithProgress(files []scan.File, workers int, hash func(string) (
 		go func() {
 			defer wg.Done()
 			for idx := range jobs {
+				if ctx.Err() != nil {
+					return
+				}
 				if progress != nil {
 					progress(int(processed.Load()), len(files), files[idx].AbsolutePath)
 				}
@@ -132,7 +143,13 @@ func ApplyHashesWithProgress(files []scan.File, workers int, hash func(string) (
 		}()
 	}
 	for idx := range files {
-		jobs <- idx
+		select {
+		case jobs <- idx:
+		case <-ctx.Done():
+			close(jobs)
+			wg.Wait()
+			return files
+		}
 	}
 	close(jobs)
 	wg.Wait()

@@ -33,7 +33,7 @@ func (s Scanner) ScanWithID(ctx context.Context, scanID string, roots []string, 
 	now := time.Now()
 	session := scan.Session{ID: scanID, Status: scan.StatusDiscovering, StartedAt: now, CreatedAt: now, SelectedPaths: roots}
 	result := ScanResult{Session: session}
-	visited := map[string]bool{}
+	visitedFiles := map[string]bool{}
 	for _, rootPath := range roots {
 		if err := ctx.Err(); err != nil {
 			session.Status = scan.StatusCancelled
@@ -64,15 +64,6 @@ func (s Scanner) ScanWithID(ctx context.Context, scanID string, roots []string, 
 				if slices.Contains(cfg.ScanExcludedFolderNames, d.Name()) {
 					return filepath.SkipDir
 				}
-				if cfg.FollowSymlinks {
-					clean, err := filepath.EvalSymlinks(path)
-					if err == nil {
-						if visited[clean] {
-							return filepath.SkipDir
-						}
-						visited[clean] = true
-					}
-				}
 				return nil
 			}
 			info, err := d.Info()
@@ -81,15 +72,20 @@ func (s Scanner) ScanWithID(ctx context.Context, scanID string, roots []string, 
 				return nil
 			}
 			isSymlink := info.Mode()&os.ModeSymlink != 0
-			if isSymlink && !cfg.FollowSymlinks {
+			if isSymlink {
 				return nil
 			}
 			if !info.Mode().IsRegular() {
 				return nil
 			}
+			canonical := filepath.Clean(path)
+			if visitedFiles[canonical] {
+				return nil
+			}
 			if !cfg.IncludeHiddenFiles && isAnyHidden(abs, path) {
 				return nil
 			}
+			visitedFiles[canonical] = true
 			rel, _ := filepath.Rel(abs, path)
 			category, mimeType := CategoryFor(path)
 			f := scan.File{

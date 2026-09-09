@@ -35,7 +35,11 @@ func SafeMove(source, target string, expectedSize int64, expectedSHA string) err
 	if err != nil {
 		return err
 	}
-	target = AutoRenamePath(target)
+	if _, err := os.Lstat(target); err == nil {
+		return errors.New("destination already exists; choose another name in the action plan")
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
 	if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 		return err
 	}

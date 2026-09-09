@@ -60,13 +60,13 @@ func TestSafeMoveDoesNotOverwriteExistingTarget(t *testing.T) {
 	hash, err := filesystem.HashFile(source)
 	require.NoError(t, err)
 
-	require.NoError(t, filesystem.SafeMove(source, target, int64(len("source")), hash.SHA256))
+	require.ErrorContains(t, filesystem.SafeMove(source, target, int64(len("source")), hash.SHA256), "destination already exists")
 
 	original, err := os.ReadFile(target)
 	require.NoError(t, err)
-	renamed, err := os.ReadFile(filepath.Join(dir, "target (1).txt"))
+	originalSource, err := os.ReadFile(source)
 	require.NoError(t, err)
 	require.Equal(t, []byte("target"), original)
-	require.Equal(t, []byte("source"), renamed)
-	require.NoFileExists(t, source)
+	require.Equal(t, []byte("source"), originalSource)
+	require.NoFileExists(t, filepath.Join(dir, "target (1).txt"))
 }

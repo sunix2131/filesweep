@@ -17,6 +17,8 @@ The application is built with Go and Wails. Scan results, settings and action hi
 
 Duplicate candidates are grouped by size before hashing. A file whose size or modification time changes during hashing is marked unstable and excluded from duplicate groups.
 
+Overlapping selected folders count each path once. Cancellation is checked during both discovery and hashing, between read buffers. Symbolic links are skipped; FileSweep does not follow them outside the selected folders.
+
 ## File operation checks
 
 FileSweep does not contain a permanent-delete fallback. A trash operation fails if the operating system trash service is unavailable.
@@ -24,6 +26,8 @@ FileSweep does not contain a permanent-delete fallback. A trash operation fails 
 Before a move, the application compares the current file with the recorded size and, when available, SHA-256. Existing destination files are not overwritten. FileSweep first attempts a no-overwrite hard link followed by removal of the source. When linking the source is unavailable, the file is copied to a unique temporary file, verified and linked into the destination before the source is removed.
 
 If removing the source fails, the new destination entry is rolled back. The original file remains in place.
+
+A destination name conflict fails that item; choose another target in the plan. No hidden auto-renaming is performed, so move history records the path that was actually used. Batch operations are not transactional: if one item fails, earlier successful moves remain in place. Undo is available only for a fully successful move batch and will fail if a source or destination has changed.
 
 ## Development
 

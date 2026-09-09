@@ -56,6 +56,10 @@ func (s *Services) StartScan(ctx context.Context, paths []string) (scan.Session,
 	s.cancels[scanID] = cancel
 	s.mu.Unlock()
 	if err := s.Store.SaveScan(ctx, session, nil, nil, nil); err != nil {
+		cancel()
+		s.mu.Lock()
+		delete(s.cancels, scanID)
+		s.mu.Unlock()
 		return scan.Session{}, err
 	}
 	go s.runScan(scanCtx, scanID, paths, cfg)
@@ -87,7 +91,9 @@ func (s *Services) runScan(scanCtx context.Context, scanID string, paths []strin
 	if s.Publisher != nil {
 		s.Publisher.ScanProgress(events.ScanProgress{ScanID: scanID, Phase: "hashing", TotalFiles: len(candidates)})
 	}
-	candidates = filesystem.ApplyHashesWithProgress(candidates, filesystem.HashWorkers(cfg.MaxHashWorkers), filesystem.HashFile, func(processed int, total int, currentPath string) {
+	candidates = filesystem.ApplyHashesContext(scanCtx, candidates, filesystem.HashWorkers(cfg.MaxHashWorkers), func(path string) (filesystem.HashResult, error) {
+		return filesystem.HashFileContext(scanCtx, path)
+	}, func(processed int, total int, currentPath string) {
 		if s.Publisher == nil {
 			return
 		}
@@ -104,6 +110,20 @@ func (s *Services) runScan(scanCtx context.Context, scanID string, paths []strin
 			Percent:        percent,
 		})
 	})
+	if scanCtx.Err() != nil {
+		result.Session.Status = scan.StatusCancelled
+		result.Session.CancelledAt = time.Now()
+		if err := s.Store.SaveScan(ctx, result.Session, result.Roots, result.Files, nil); err != nil {
+			if s.Publisher != nil {
+				s.Publisher.ScanFailed(scanID, err.Error())
+			}
+			return
+		}
+		if s.Publisher != nil {
+			s.Publisher.ScanCancelled(scanID)
+		}
+		return
+	}
 	if s.Publisher != nil {
 		s.Publisher.ScanProgress(events.ScanProgress{ScanID: scanID, Phase: "saving", ProcessedFiles: len(result.Files), TotalFiles: len(result.Files), Percent: 95})
 	}
@@ -168,6 +188,7 @@ func (s *Services) GetSettings(ctx context.Context) (settings.Settings, error) {
 	return s.Store.GetSettings(ctx)
 }
 func (s *Services) SaveSettings(ctx context.Context, cfg settings.Settings) (settings.Settings, error) {
+	cfg.FollowSymlinks = false
 	if cfg.MaxHashWorkers < 1 {
 		cfg.MaxHashWorkers = 1
 	}
@@ -300,10 +321,21 @@ func (s *Services) UndoAction(ctx context.Context, actionID string) (actions.Act
 	for _, item := range orig.Items {
 		items = append(items, actions.Item{SourcePath: item.TargetPath, TargetPath: item.SourcePath, SourceSizeBytes: item.SourceSizeBytes, SourceSHA256: item.SourceSHA256})
 	}
-	return s.ExecuteAction(ctx, actions.TypeMoveToFolder, items)
+	result, err := s.ExecuteAction(ctx, actions.TypeMoveToFolder, items)
+	if err == nil && result.Status == actions.StatusCompleted {
+		orig.UndoAvailable = false
+		err = s.Store.SaveAction(ctx, orig)
+	}
+	return result, err
 }
 
 func (s *Services) ExportCSV(ctx context.Context, scanID string) (string, error) {
+	if _, err := uuid.Parse(scanID); err != nil {
+		return "", fmt.Errorf("invalid scan ID")
+	}
+	if _, err := s.Store.GetScanSession(ctx, scanID); err != nil {
+		return "", err
+	}
 	files, _, err := s.Store.ListFiles(ctx, scanID, "", 0, "", 1000000, 0)
 	if err != nil {
 		return "", err
@@ -315,12 +347,18 @@ func (s *Services) ExportCSV(ctx context.Context, scanID string) (string, error)
 	}
 	defer f.Close()
 	w := csv.NewWriter(f)
-	defer w.Flush()
 	_ = w.Write([]string{"name", "path", "size_bytes", "category", "modified_at", "sha256"})
 	for _, file := range files {
 		_ = w.Write([]string{file.Name, file.AbsolutePath, fmt.Sprint(file.SizeBytes), file.Category, file.ModifiedAt.Format(time.RFC3339), file.SHA256})
 	}
-	return path, w.Error()
+	w.Flush()
+	if err := w.Error(); err != nil {
+		return "", err
+	}
+	if err := f.Close(); err != nil {
+		return "", err
+	}
+	return path, nil
 }
 
 func (s *Services) ListActions(ctx context.Context, limit, offset int) ([]actions.Action, int, error) {

@@ -27,3 +27,22 @@ func TestScanFindsOnlyTrueDuplicates(t *testing.T) {
 	require.Len(t, groups, 1)
 	require.Equal(t, int64(4), groups[0].EstimatedReclaimableBytes)
 }
+
+func TestOverlappingRootsDoNotTurnOneFileIntoItsOwnDuplicate(t *testing.T) {
+	dir := t.TempDir()
+	nested := filepath.Join(dir, "nested")
+	require.NoError(t, os.Mkdir(nested, 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(nested, "only.txt"), []byte("one file"), 0o600))
+	result, err := (filesystem.Scanner{}).Scan(context.Background(), []string{dir, nested}, settings.Default())
+	require.NoError(t, err)
+	require.Len(t, result.Files, 1)
+	require.Equal(t, int64(8), result.Session.TotalSizeBytes)
+	require.Empty(t, filesystem.DuplicateCandidates(result.Files))
+}
+
+func TestHashingHonorsCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	_, err := filesystem.HashFileContext(ctx, filepath.Join(t.TempDir(), "not-read"))
+	require.ErrorIs(t, err, context.Canceled)
+}
